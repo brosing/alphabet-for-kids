@@ -64,16 +64,17 @@
       Z: ['🦓 Zebra']
     }
   };
+  const selectLang = lang === 'en' ? 'en-US' : 'id-ID';
 
   function playLetterSound() {
     const utterance = new SpeechSynthesisUtterance(letter.toLowerCase());
-    utterance.lang = lang === 'en' ? 'en-US' : 'id-ID';
+    utterance.lang = selectLang;
     window.speechSynthesis.speak(utterance);
   }
 
   function playWordSound(word: string) {
     const utterance = new SpeechSynthesisUtterance(word.split(' ')[1]);
-    utterance.lang = lang === 'en' ? 'en-US' : 'id-ID';
+    utterance.lang = selectLang;
     window.speechSynthesis.speak(utterance);
   }
 
@@ -106,7 +107,7 @@
     </div>
 
     <div class="card p-8">
-      <h2 class="text-2xl font-bold text-blue-600 mb-4">Words starting with {letter}</h2>
+      <h2 class="text-2xl font-bold text-blue-600 mb-4">{lang === 'en' ? 'Words starting with' : 'Kata dimulai dengan'} {letter}</h2>
       <div class="grid gap-4">
         {#each words[lang][letter] as word}
           <div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg">

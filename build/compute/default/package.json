@@ -1,0 +1,12 @@
+{
+  "name": "alphabet-for-kids",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "author": "Singgih Nn <singgihnn@gmail.com>",
+  "dependencies": {
+    "@fontsource-variable/nunito": "^5.2.5",
+    "@sveltejs/kit": "^2.19.0",
+    "svelte-feather-icons": "^4.2.0"
+  }
+}
