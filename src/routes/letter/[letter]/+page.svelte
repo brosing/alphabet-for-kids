@@ -13,15 +13,20 @@
   };
   const selectLang = lang === 'en' ? 'en-US' : 'id-ID';
 
-  function playLetterSound() {
-    const utterance = new SpeechSynthesisUtterance(letter.toLowerCase());
+  function getSpeech(text: string) {
+    const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = selectLang;
+    utterance.voice = speechSynthesis.getVoices().find((voice) => voice.lang === 'id-ID') || null
+    return utterance;
+  }
+
+  function playLetterSound() {
+    const utterance = getSpeech(letter.toLowerCase());
     window.speechSynthesis.speak(utterance);
   }
 
   function playWordSound(word: string) {
-    const utterance = new SpeechSynthesisUtterance(word.split(' ')[1]);
-    utterance.lang = selectLang;
+    const utterance = getSpeech(word.split(' ')[1]);
     window.speechSynthesis.speak(utterance);
   }
 
