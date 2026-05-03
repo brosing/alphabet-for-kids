@@ -49,6 +49,12 @@
           {letter}
         </button>
       {/each}
+      <a
+        href="/quiz?lang={language}"
+        class="col-span-2 card aspect-[2/1] flex items-center justify-center text-2xl font-bold bg-gradient-to-br from-yellow-400 to-orange-500 text-white hover:scale-95 transition-transform border-none shadow-lg"
+      >
+        <span>Word Quiz 🎮</span>
+      </a>
     </div>
   </div>
 </div>
