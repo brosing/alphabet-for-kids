@@ -1,9 +1,21 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { GlobeIcon } from "svelte-feather-icons";
   
   const alphabet = Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
 
   let language = $state<'en' | 'id'>('id');
+
+  onMount(() => {
+    const stored = localStorage.getItem('language');
+    if (stored === 'en' || stored === 'id') {
+      language = stored;
+    }
+  });
+
+  $effect(() => {
+    localStorage.setItem('language', language);
+  });
 
   function toggleLanguage() {
     language = language === 'en' ? 'id' : 'en';

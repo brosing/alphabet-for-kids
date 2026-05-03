@@ -1,8 +1,7 @@
 import type * as Kit from '@sveltejs/kit';
 
 type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
-// @ts-ignore
-type MatcherParam<M> = M extends (param : string) => param is infer U ? U extends string ? U : string : string;
+type MatcherParam<M> = M extends (param : string) => param is (infer U extends string) ? U : string;
 type RouteParams = {  };
 type RouteId = '/';
 type MaybeWithVoid<T> = {} extends T ? T | void : T;
@@ -18,7 +17,7 @@ type LayoutParentData = EnsureDefined<{}>;
 
 export type PageServerData = null;
 export type PageData = Expand<PageParentData>;
-export type PageProps = { data: PageData }
+export type PageProps = { params: RouteParams; data: PageData }
 export type LayoutServerData = null;
 export type LayoutData = Expand<LayoutParentData>;
-export type LayoutProps = { data: LayoutData; children: import("svelte").Snippet }
+export type LayoutProps = { params: LayoutParams; data: LayoutData; children: import("svelte").Snippet }

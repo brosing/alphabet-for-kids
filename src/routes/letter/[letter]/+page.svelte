@@ -1,17 +1,31 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { ArrowLeftIcon, ArrowUpIcon, ArrowDownIcon, Volume2Icon } from 'svelte-feather-icons';
   import { page } from '$app/state';
   import { enEmoji, idEmoji } from '$lib/data';
 
   type LangType = 'en' | 'id'
-  const lang = page.url.searchParams.get('lang') as LangType;
-  const letter = page.params.letter.toUpperCase();
-  let isUpperCase = true;
+  let lang = $state<LangType>((page.url.searchParams.get('lang') as LangType) || 'id');
+  const letter = (page.params.letter ?? 'A').toUpperCase();
+  let isUpperCase = $state(true);
   const words: Record<LangType, { [key: string]: string[]}> = {
     en: enEmoji,
     id: idEmoji
   };
-  const selectLang = lang === 'en' ? 'en-US' : 'id-ID';
+
+  onMount(() => {
+    const urlLang = page.url.searchParams.get('lang') as LangType;
+    if (urlLang === 'en' || urlLang === 'id') {
+      localStorage.setItem('language', urlLang);
+    } else {
+      const stored = localStorage.getItem('language') as LangType;
+      if (stored === 'en' || stored === 'id') {
+        lang = stored;
+      }
+    }
+  });
+
+  const selectLang = $derived(lang === 'en' ? 'en-US' : 'id-ID');
 
   function getSpeech(text: string) {
     const utterance = new SpeechSynthesisUtterance(text);
@@ -26,7 +40,8 @@
   }
 
   function playWordSound(word: string) {
-    const utterance = getSpeech(word.split(' ')[1]);
+    const wordPart = word.includes(' ') ? word.split(' ')[1] : word;
+    const utterance = getSpeech(wordPart);
     window.speechSynthesis.speak(utterance);
   }
 
