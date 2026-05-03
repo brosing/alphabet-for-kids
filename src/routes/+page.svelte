@@ -1,5 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { fade, fly, scale } from "svelte/transition";
+  import { playSoundEffect } from "$lib/audio";
 
   const alphabet = Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
@@ -59,16 +61,37 @@
   });
 
   function toggleLanguage() {
+    playSoundEffect('pop');
     language = language === "en" ? "id" : "en";
   }
 
   function goToLetterDetail(letter: string) {
+    playSoundEffect('pop');
     window.location.href = `/letter/${letter.toLowerCase()}?lang=${language}`;
   }
 </script>
 
-<div class="min-h-screen relative z-1">
-  <div class="w-full max-w-xl mx-auto pb-8">
+{#if mounted}
+<div class="min-h-screen relative z-1" in:fade={{duration: 400}}>
+  <!-- Animated Background Elements -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10 opacity-40">
+    {#each Array(10) as _, i}
+      <div 
+        class="absolute text-5xl opacity-50"
+        style="
+          left: {Math.random() * 100}%;
+          top: {Math.random() * 100}%;
+          animation: float {5 + Math.random() * 5}s ease-in-out infinite {Math.random() * 2}s, 
+                     drift {15 + Math.random() * 15}s linear infinite {Math.random() * 5}s;
+          filter: blur(1px);
+        "
+      >
+        {['⭐', '☁️', '🎈', '✨'][Math.floor(Math.random() * 4)]}
+      </div>
+    {/each}
+  </div>
+
+  <div class="w-full max-w-xl mx-auto pb-8" in:fly={{y: 20, duration: 500, delay: 100}}>
     <!-- Header -->
     <header
       class="sticky top-0 z-10 backdrop-blur-lg bg-white/70 border-b-2 border-cream-200 md:rounded-b-[var(--radius-kid-xl)]"
@@ -132,11 +155,9 @@
             background: {color.bg};
             color: {color.text};
             border: 2px solid {color.border};
-            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) {i * 25}ms;
-            {mounted
-            ? 'opacity: 1; transform: translateY(0)'
-            : 'opacity: 0; transform: translateY(1rem)'}
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
           "
+          in:scale={{duration: 400, delay: i * 15, start: 0.8, opacity: 0}}
           onclick={() => goToLetterDetail(letter)}
         >
           {letter}
@@ -146,16 +167,13 @@
       <!-- Word Quiz Button -->
       <a
         href="/quiz?lang={language}"
+        onclick={() => playSoundEffect('pop')}
         class="col-span-2 card aspect-[2/1] flex items-center justify-center gap-3 text-xl font-black text-white border-none"
         style="
           background: linear-gradient(135deg, #FCD34D, #FBBF24, #FB923C);
-          transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) {alphabet.length *
-          25}ms;
           box-shadow: 0 6px 24px rgba(245, 158, 11, 0.35);
-          {mounted
-          ? 'opacity: 1; transform: translateY(0)'
-          : 'opacity: 0; transform: translateY(1rem)'}
         "
+        in:scale={{duration: 400, delay: alphabet.length * 15, start: 0.8, opacity: 0}}
       >
         <span class="text-2xl">🎮</span>
         <span>Word Quiz</span>
@@ -168,3 +186,12 @@
     </div>
   </div>
 </div>
+{/if}
+
+<style>
+  @keyframes drift {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(20px); }
+    100% { transform: translateX(0); }
+  }
+</style>

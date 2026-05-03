@@ -15,6 +15,7 @@
     "@sveltejs/adapter-cloudflare": "^7.2.8",
     "@sveltejs/vite-plugin-svelte": "^5.1.1",
     "@tailwindcss/vite": "^4.2.4",
+    "@types/canvas-confetti": "^1.9.0",
     "autoprefixer": "^10.5.0",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
@@ -30,6 +31,7 @@
   "dependencies": {
     "@fontsource-variable/nunito": "^5.2.7",
     "@sveltejs/kit": "^2.59.0",
+    "canvas-confetti": "^1.9.4",
     "svelte-feather-icons": "^4.2.0"
   },
   "packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8"

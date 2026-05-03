@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { page } from "$app/state";
+  import { fade, scale, fly } from "svelte/transition";
+  import confetti from "canvas-confetti";
   import {
     ArrowLeftIcon,
     Volume2Icon,
@@ -8,6 +10,7 @@
     CheckCircleIcon,
   } from "svelte-feather-icons";
   import { enEmoji, idEmoji } from "$lib/data";
+  import { playSoundEffect } from "$lib/audio";
 
   type LangType = "en" | "id";
   let lang = $state<LangType>(
@@ -15,6 +18,7 @@
   );
 
   let targetWord = $state("");
+  let displayWord = $state("");
   let targetEmoji = $state("");
   let shuffledLetters = $state<string[]>([]);
   let selectedLetters = $state<string[]>([]);
@@ -22,6 +26,7 @@
   let isWrong = $state(false);
   let showHint = $state(false);
   let mounted = $state(false);
+  let availableVoices = $state<SpeechSynthesisVoice[]>([]);
 
   const wordsData = {
     en: enEmoji,
@@ -34,9 +39,10 @@
     const randomEntry =
       validEntries[Math.floor(Math.random() * validEntries.length)];
 
-    const parts = randomEntry.split(" ");
-    targetEmoji = parts[0];
-    targetWord = parts[1].toUpperCase();
+    const firstSpaceIndex = randomEntry.indexOf(" ");
+    targetEmoji = randomEntry.slice(0, firstSpaceIndex);
+    displayWord = randomEntry.slice(firstSpaceIndex + 1).toUpperCase();
+    targetWord = displayWord.replace(/\s+/g, "");
 
     shuffledLetters = targetWord.split("").sort(() => Math.random() - 0.5);
     selectedLetters = [];
@@ -51,6 +57,15 @@
       lang = stored;
     }
     initQuiz();
+    
+    const loadVoices = () => {
+      availableVoices = window.speechSynthesis.getVoices();
+    };
+    loadVoices();
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+    
     setTimeout(() => {
       mounted = true;
     }, 50);
@@ -58,17 +73,20 @@
 
   function getSpeech(text: string) {
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = lang === "en" ? "en-US" : "id-ID";
-    utterance.voice =
-      speechSynthesis
-        .getVoices()
-        .find((voice) => voice.lang === (lang === "en" ? "en-US" : "id-ID")) ||
-      null;
+    const selectedLang = lang === "en" ? "en-US" : "id-ID";
+    utterance.lang = selectedLang;
+    
+    const voice = availableVoices.find((v) => v.lang.startsWith(selectedLang)) || 
+                  availableVoices.find((v) => v.lang.startsWith(selectedLang.split('-')[0]));
+    if (voice) {
+      utterance.voice = voice;
+    }
     return utterance;
   }
 
   function playSound() {
-    const utterance = getSpeech(targetWord.toLowerCase());
+    playSoundEffect('pop');
+    const utterance = getSpeech(displayWord.toLowerCase());
     window.speechSynthesis.speak(utterance);
   }
 
@@ -76,25 +94,31 @@
     if (isCorrect) return;
     isWrong = false;
 
+    playSoundEffect('pop');
     selectedLetters.push(letter);
     shuffledLetters.splice(index, 1);
 
     if (selectedLetters.join("") === targetWord) {
       isCorrect = true;
-      playSound();
+      playSoundEffect('ding');
+      fireConfetti();
+      setTimeout(playSound, 500);
     } else if (selectedLetters.length === targetWord.length) {
       isWrong = true;
+      playSoundEffect('boing');
     }
   }
 
   function undoLetter(index: number) {
     if (isCorrect) return;
+    playSoundEffect('pop');
     const [letter] = selectedLetters.splice(index, 1);
     shuffledLetters.push(letter);
     isWrong = false;
   }
 
   function resetQuiz() {
+    playSoundEffect('boing');
     selectedLetters = [];
     shuffledLetters = targetWord.split("").sort(() => Math.random() - 0.5);
     isCorrect = false;
@@ -102,12 +126,40 @@
   }
 
   function nextWord() {
+    playSoundEffect('pop');
     initQuiz();
+  }
+
+  function fireConfetti() {
+    const duration = 2500;
+    const end = Date.now() + duration;
+
+    (function frame() {
+      confetti({
+        particleCount: 5,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.8 },
+        colors: ['#FB923C', '#FBBF24', '#38BDF8', '#4ADE80', '#FB7185']
+      });
+      confetti({
+        particleCount: 5,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.8 },
+        colors: ['#FB923C', '#FBBF24', '#38BDF8', '#4ADE80', '#FB7185']
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    }());
   }
 </script>
 
-<div class="min-h-screen relative z-1">
-  <div class="w-full max-w-xl mx-auto pb-8">
+{#if mounted}
+<div class="min-h-screen relative z-1" in:fade={{duration: 400}}>
+  <div class="w-full max-w-xl mx-auto pb-8" in:fly={{y: 20, duration: 500, delay: 100}}>
     <!-- Header -->
     <header class="p-4 flex justify-between items-center">
       <a href="/" class="btn btn-secondary flex items-center gap-2 text-sm">
@@ -135,23 +187,7 @@
       >
         {#if isCorrect}
           <!-- Success State -->
-          <div class="space-y-5">
-            <!-- Confetti decorations -->
-            <div class="absolute inset-0 pointer-events-none overflow-hidden">
-              {#each Array(8) as _, i}
-                <div
-                  class="absolute text-2xl"
-                  style="
-                    left: {10 + i * 12}%;
-                    top: {-10 + (i % 3) * 5}%;
-                    animation: confetti-fall 1.5s ease-out {i * 0.15}s forwards;
-                  "
-                >
-                  {["🎉", "⭐", "🌟", "🎊", "💫", "✨", "🎈", "🎀"][i]}
-                </div>
-              {/each}
-            </div>
-
+          <div class="space-y-5" in:scale={{duration: 500, start: 0.8, opacity: 0}}>
             <div class="relative z-1 space-y-4">
               <div class="text-8xl animate-[jelly_0.5s_ease]">
                 {targetEmoji}
@@ -159,7 +195,7 @@
               <div
                 class="text-4xl font-black text-leaf-500 uppercase tracking-widest"
               >
-                {targetWord}
+                {displayWord}
               </div>
               <div
                 class="flex items-center justify-center gap-2 text-leaf-600 font-black text-lg"
@@ -250,16 +286,6 @@
     {/if}
   </div>
 </div>
+{/if}
 
-<style>
-  @keyframes confetti-fall {
-    0% {
-      transform: translateY(-10px) rotate(0deg);
-      opacity: 1;
-    }
-    100% {
-      transform: translateY(300px) rotate(720deg);
-      opacity: 0;
-    }
-  }
-</style>
+
