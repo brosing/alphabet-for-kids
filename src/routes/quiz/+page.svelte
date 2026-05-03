@@ -51,7 +51,9 @@
       lang = stored;
     }
     initQuiz();
-    setTimeout(() => { mounted = true; }, 50);
+    setTimeout(() => {
+      mounted = true;
+    }, 50);
   });
 
   function getSpeech(text: string) {
@@ -110,13 +112,13 @@
     <header class="p-4 flex justify-between items-center">
       <a href="/" class="btn btn-secondary flex items-center gap-2 text-sm">
         <ArrowLeftIcon size="16" />
-        <span class="font-bold">{lang === 'en' ? 'Back' : 'Kembali'}</span>
+        <span class="font-bold">{lang === "en" ? "Back" : "Kembali"}</span>
       </a>
       <h1 class="text-xl font-black text-kid-title flex items-center gap-2">
         <span>🎮</span> Word Quiz
       </h1>
       <button
-        class="btn btn-secondary flex items-center justify-center w-10 h-10 p-0"
+        class="btn btn-secondary flex items-center justify-center w-10 h-10 !p-0"
         onclick={nextWord}
         title="Next word"
       >
@@ -145,19 +147,25 @@
                     animation: confetti-fall 1.5s ease-out {i * 0.15}s forwards;
                   "
                 >
-                  {['🎉', '⭐', '🌟', '🎊', '💫', '✨', '🎈', '🎀'][i]}
+                  {["🎉", "⭐", "🌟", "🎊", "💫", "✨", "🎈", "🎀"][i]}
                 </div>
               {/each}
             </div>
 
             <div class="relative z-1 space-y-4">
-              <div class="text-8xl animate-[jelly_0.5s_ease]">{targetEmoji}</div>
-              <div class="text-4xl font-black text-leaf-500 uppercase tracking-widest">
+              <div class="text-8xl animate-[jelly_0.5s_ease]">
+                {targetEmoji}
+              </div>
+              <div
+                class="text-4xl font-black text-leaf-500 uppercase tracking-widest"
+              >
                 {targetWord}
               </div>
-              <div class="flex items-center justify-center gap-2 text-leaf-600 font-black text-lg">
+              <div
+                class="flex items-center justify-center gap-2 text-leaf-600 font-black text-lg"
+              >
                 <CheckCircleIcon size="24" />
-                {lang === 'en' ? 'Great Job!' : 'Hebat!'}  🎉
+                {lang === "en" ? "Great Job!" : "Hebat!"} 🎉
               </div>
             </div>
 
@@ -165,7 +173,7 @@
               class="btn bg-gradient-to-r from-leaf-400 to-leaf-500 text-white px-8 py-3.5 text-lg font-black shadow-lg hover:shadow-xl transition-all"
               onclick={nextWord}
             >
-              {lang === 'en' ? 'Next Word!' : 'Kata Berikutnya!'} →
+              {lang === "en" ? "Next Word!" : "Kata Berikutnya!"} →
             </button>
           </div>
         {:else}
@@ -180,22 +188,26 @@
             </button>
 
             <p class="text-sm font-bold text-primary-400">
-              {lang === 'en' ? 'Tap to listen!' : 'Ketuk untuk mendengar!'}  🔊
+              {lang === "en" ? "Tap to listen!" : "Ketuk untuk mendengar!"} 🔊
             </p>
 
             <!-- Letter Slots -->
             <div
-              class="flex flex-wrap justify-center gap-2 min-h-[60px] {isWrong ? 'animate-shake' : ''}"
+              class="flex flex-wrap justify-center gap-2 min-h-[60px] {isWrong
+                ? 'animate-shake'
+                : ''}"
             >
               {#each Array(targetWord.length) as _, i}
                 <button
                   class="w-12 h-16 rounded-xl flex items-center justify-center text-3xl font-black transition-all
                     {isWrong
-                      ? 'bg-berry-100 border-2 border-berry-400 text-berry-500'
-                      : selectedLetters[i]
-                        ? 'bg-primary-100 border-2 border-primary-300 text-primary-600'
-                        : 'bg-cream-100 border-2 border-cream-300 text-cream-300'}
-                    {selectedLetters[i] ? 'cursor-pointer hover:scale-105 active:scale-95' : 'cursor-default'}"
+                    ? 'bg-berry-100 border-2 border-berry-400 text-berry-500'
+                    : selectedLetters[i]
+                      ? 'bg-primary-100 border-2 border-primary-300 text-primary-600'
+                      : 'bg-cream-100 border-2 border-cream-300 text-cream-300'}
+                    {selectedLetters[i]
+                    ? 'cursor-pointer hover:scale-105 active:scale-95'
+                    : 'cursor-default'}"
                   onclick={() => selectedLetters[i] && undoLetter(i)}
                 >
                   {selectedLetters[i] || ""}
@@ -216,11 +228,8 @@
             </div>
 
             <!-- Reset -->
-            <button
-              class="btn btn-ghost text-sm"
-              onclick={resetQuiz}
-            >
-              ↩️ {lang === 'en' ? 'Reset' : 'Ulangi'}
+            <button class="btn btn-ghost text-sm" onclick={resetQuiz}>
+              ↩️ {lang === "en" ? "Reset" : "Ulangi"}
             </button>
           </div>
         {/if}
@@ -234,9 +243,9 @@
           {mounted ? 'opacity-100' : 'opacity-0'}"
         style="transition: opacity 0.5s ease 0.3s;"
       >
-        {lang === 'en'
-          ? '🎶 Listen to the sound and spell the word!'
-          : '🎶 Dengarkan suara dan eja kata-nya!'}
+        {lang === "en"
+          ? "🎶 Listen to the sound and spell the word!"
+          : "🎶 Dengarkan suara dan eja kata-nya!"}
       </div>
     {/if}
   </div>
@@ -244,7 +253,13 @@
 
 <style>
   @keyframes confetti-fall {
-    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(300px) rotate(720deg); opacity: 0; }
+    0% {
+      transform: translateY(-10px) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(300px) rotate(720deg);
+      opacity: 0;
+    }
   }
 </style>
