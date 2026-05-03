@@ -21,6 +21,7 @@
   let isCorrect = $state(false);
   let isWrong = $state(false);
   let showHint = $state(false);
+  let mounted = $state(false);
 
   const wordsData = {
     en: enEmoji,
@@ -50,6 +51,7 @@
       lang = stored;
     }
     initQuiz();
+    setTimeout(() => { mounted = true; }, 50);
   });
 
   function getSpeech(text: string) {
@@ -102,118 +104,147 @@
   }
 </script>
 
-<div class="min-h-screen bg-blue-50 p-4 font-nunito">
-  <div class="w-full max-w-xl mx-auto space-y-6">
-    <header class="flex justify-between items-center">
-      <a href="/" class="btn btn-ghost flex items-center gap-2">
-        <ArrowLeftIcon size="20" />
-        Back
+<div class="min-h-screen relative z-1">
+  <div class="w-full max-w-xl mx-auto pb-8">
+    <!-- Header -->
+    <header class="p-4 flex justify-between items-center">
+      <a href="/" class="btn btn-secondary flex items-center gap-2 text-sm">
+        <ArrowLeftIcon size="16" />
+        <span class="font-bold">{lang === 'en' ? 'Back' : 'Kembali'}</span>
       </a>
-      <h1 class="text-2xl font-bold text-blue-600">Word Quiz</h1>
-      <button class="btn btn-ghost" onclick={nextWord}>
-        <RefreshCwIcon size="20" />
+      <h1 class="text-xl font-black text-kid-title flex items-center gap-2">
+        <span>🎮</span> Word Quiz
+      </h1>
+      <button
+        class="btn btn-secondary flex items-center justify-center w-10 h-10 p-0"
+        onclick={nextWord}
+        title="Next word"
+      >
+        <RefreshCwIcon size="16" />
       </button>
     </header>
 
-    <div class="card p-8 text-center bg-white shadow-xl rounded-3xl space-y-8">
-      {#if isCorrect}
-        <div class="space-y-4">
-          <div class="space-y-4 animate-bounce">
-            <div class="text-8xl">{targetEmoji}</div>
-            <div
-              class="text-4xl font-black text-green-500 uppercase tracking-widest"
-            >
-              {targetWord}
+    <!-- Quiz Card -->
+    <div class="mx-3">
+      <div
+        class="card p-8 text-center border-2 border-cream-200 relative overflow-hidden
+          {mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}"
+        style="transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);"
+      >
+        {#if isCorrect}
+          <!-- Success State -->
+          <div class="space-y-5">
+            <!-- Confetti decorations -->
+            <div class="absolute inset-0 pointer-events-none overflow-hidden">
+              {#each Array(8) as _, i}
+                <div
+                  class="absolute text-2xl"
+                  style="
+                    left: {10 + i * 12}%;
+                    top: {-10 + (i % 3) * 5}%;
+                    animation: confetti-fall 1.5s ease-out {i * 0.15}s forwards;
+                  "
+                >
+                  {['🎉', '⭐', '🌟', '🎊', '💫', '✨', '🎈', '🎀'][i]}
+                </div>
+              {/each}
             </div>
-            <div
-              class="flex items-center justify-center gap-2 text-green-600 font-bold"
-            >
-              <CheckCircleIcon /> Great Job!
+
+            <div class="relative z-1 space-y-4">
+              <div class="text-8xl animate-[jelly_0.5s_ease]">{targetEmoji}</div>
+              <div class="text-4xl font-black text-leaf-500 uppercase tracking-widest">
+                {targetWord}
+              </div>
+              <div class="flex items-center justify-center gap-2 text-leaf-600 font-black text-lg">
+                <CheckCircleIcon size="24" />
+                {lang === 'en' ? 'Great Job!' : 'Hebat!'}  🎉
+              </div>
             </div>
-          </div>
-          <button
-            class="btn btn-primary rounded-full px-8 py-4 text-xl mt-4"
-            onclick={nextWord}
-          >
-            Next Word!
-          </button>
-        </div>
-      {:else}
-        <div class="space-y-8">
-          <button
-            class="w-32 h-32 rounded-full bg-blue-500 text-white flex items-center justify-center mx-auto shadow-lg hover:scale-105 active:scale-95 transition-all"
-            onclick={playSound}
-          >
-            <Volume2Icon size="48" />
-          </button>
 
-          <div
-            class="flex flex-wrap justify-center gap-2 min-h-[60px] {isWrong
-              ? 'animate-shake'
-              : ''}"
-          >
-            {#each Array(targetWord.length) as _, i}
-              <button
-                class="w-12 h-16 border-b-4 flex items-center justify-center text-3xl font-bold transition-all
-                  {isWrong
-                  ? 'border-red-500 text-red-500'
-                  : 'border-blue-200 text-blue-600'}
-                  {selectedLetters[i] ? 'cursor-pointer' : 'cursor-default'}"
-                onclick={() => selectedLetters[i] && undoLetter(i)}
-              >
-                {selectedLetters[i] || ""}
-              </button>
-            {/each}
+            <button
+              class="btn bg-gradient-to-r from-leaf-400 to-leaf-500 text-white px-8 py-3.5 text-lg font-black shadow-lg hover:shadow-xl transition-all"
+              onclick={nextWord}
+            >
+              {lang === 'en' ? 'Next Word!' : 'Kata Berikutnya!'} →
+            </button>
           </div>
+        {:else}
+          <!-- Quiz State -->
+          <div class="space-y-7">
+            <!-- Sound Button -->
+            <button
+              class="w-28 h-28 rounded-full bg-gradient-to-br from-primary-400 to-primary-500 text-white flex items-center justify-center mx-auto shadow-kid-lg hover:shadow-kid-xl hover:scale-105 active:scale-95 transition-all"
+              onclick={playSound}
+            >
+              <Volume2Icon size="44" />
+            </button>
 
-          <div class="flex flex-wrap justify-center gap-3 mt-8">
-            {#each shuffledLetters as letter, i}
-              <button
-                class="w-14 h-14 bg-white border-2 border-blue-400 rounded-2xl flex items-center justify-center text-2xl font-bold text-blue-600 shadow-md hover:bg-blue-50 active:bg-blue-100 transition-all"
-                onclick={() => selectLetter(letter, i)}
-              >
-                {letter}
-              </button>
-            {/each}
+            <p class="text-sm font-bold text-primary-400">
+              {lang === 'en' ? 'Tap to listen!' : 'Ketuk untuk mendengar!'}  🔊
+            </p>
+
+            <!-- Letter Slots -->
+            <div
+              class="flex flex-wrap justify-center gap-2 min-h-[60px] {isWrong ? 'animate-shake' : ''}"
+            >
+              {#each Array(targetWord.length) as _, i}
+                <button
+                  class="w-12 h-16 rounded-xl flex items-center justify-center text-3xl font-black transition-all
+                    {isWrong
+                      ? 'bg-berry-100 border-2 border-berry-400 text-berry-500'
+                      : selectedLetters[i]
+                        ? 'bg-primary-100 border-2 border-primary-300 text-primary-600'
+                        : 'bg-cream-100 border-2 border-cream-300 text-cream-300'}
+                    {selectedLetters[i] ? 'cursor-pointer hover:scale-105 active:scale-95' : 'cursor-default'}"
+                  onclick={() => selectedLetters[i] && undoLetter(i)}
+                >
+                  {selectedLetters[i] || ""}
+                </button>
+              {/each}
+            </div>
+
+            <!-- Scrambled Letters -->
+            <div class="flex flex-wrap justify-center gap-3">
+              {#each shuffledLetters as letter, i}
+                <button
+                  class="w-14 h-14 bg-white border-2 border-primary-200 rounded-[var(--radius-kid)] flex items-center justify-center text-2xl font-black text-primary-600 shadow-kid hover:shadow-kid-lg hover:border-primary-400 hover:bg-primary-50 active:scale-90 transition-all"
+                  onclick={() => selectLetter(letter, i)}
+                >
+                  {letter}
+                </button>
+              {/each}
+            </div>
+
+            <!-- Reset -->
+            <button
+              class="btn btn-ghost text-sm"
+              onclick={resetQuiz}
+            >
+              ↩️ {lang === 'en' ? 'Reset' : 'Ulangi'}
+            </button>
           </div>
-
-          <button
-            class="text-blue-400 font-medium text-sm hover:underline"
-            onclick={resetQuiz}
-          >
-            Reset
-          </button>
-        </div>
-      {/if}
+        {/if}
+      </div>
     </div>
 
+    <!-- Hint text -->
     {#if !isCorrect}
-      <div class="text-center text-blue-400/60 font-medium">
-        Listen to the sound and spell the word!
+      <div
+        class="text-center mt-4 text-primary-300 font-bold text-sm
+          {mounted ? 'opacity-100' : 'opacity-0'}"
+        style="transition: opacity 0.5s ease 0.3s;"
+      >
+        {lang === 'en'
+          ? '🎶 Listen to the sound and spell the word!'
+          : '🎶 Dengarkan suara dan eja kata-nya!'}
       </div>
     {/if}
   </div>
 </div>
 
 <style>
-  :global(body) {
-    background-color: #f0f7ff;
-  }
-
-  @keyframes shake {
-    0%,
-    100% {
-      transform: translateX(0);
-    }
-    25% {
-      transform: translateX(-5px);
-    }
-    75% {
-      transform: translateX(5px);
-    }
-  }
-
-  .animate-shake {
-    animation: shake 0.2s ease-in-out 0s 2;
+  @keyframes confetti-fall {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(300px) rotate(720deg); opacity: 0; }
   }
 </style>

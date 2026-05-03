@@ -8,10 +8,22 @@
   let lang = $state<LangType>((page.url.searchParams.get('lang') as LangType) || 'id');
   const letter = (page.params.letter ?? 'A').toUpperCase();
   let isUpperCase = $state(true);
+  let mounted = $state(false);
   const words: Record<LangType, { [key: string]: string[]}> = {
     en: enEmoji,
     id: idEmoji
   };
+
+  // Color themes for each letter based on position
+  const colorThemes = [
+    { gradient: 'linear-gradient(135deg, #FB923C, #EA580C)', light: '#FFF7ED', accent: '#EA580C', border: '#FED7AA', btnBg: '#F97316', btnHover: '#EA580C' },
+    { gradient: 'linear-gradient(135deg, #FBBF24, #F59E0B)', light: '#FFFBEB', accent: '#D97706', border: '#FDE68A', btnBg: '#F59E0B', btnHover: '#D97706' },
+    { gradient: 'linear-gradient(135deg, #38BDF8, #0EA5E9)', light: '#F0F9FF', accent: '#0284C7', border: '#BAE6FD', btnBg: '#0EA5E9', btnHover: '#0284C7' },
+    { gradient: 'linear-gradient(135deg, #4ADE80, #22C55E)', light: '#F0FDF4', accent: '#16A34A', border: '#BBF7D0', btnBg: '#22C55E', btnHover: '#16A34A' },
+    { gradient: 'linear-gradient(135deg, #FB7185, #F43F5E)', light: '#FFF1F2', accent: '#E11D48', border: '#FECDD3', btnBg: '#F43F5E', btnHover: '#E11D48' },
+  ];
+  const colorIdx = (letter.charCodeAt(0) - 65) % colorThemes.length;
+  const theme = colorThemes[colorIdx];
 
   onMount(() => {
     const urlLang = page.url.searchParams.get('lang') as LangType;
@@ -23,6 +35,7 @@
         lang = stored;
       }
     }
+    setTimeout(() => { mounted = true; }, 50);
   });
 
   const selectLang = $derived(lang === 'en' ? 'en-US' : 'id-ID');
@@ -50,40 +63,91 @@
   }
 </script>
 
-<div class="min-h-screen">
-  <div class="w-full max-w-xl mx-auto space-y-4 p-4">
-    <a href="/" class="btn btn-ghost flex items-center gap-2 -ml-4">
-      <ArrowLeftIcon size="20" />
-      Home
-    </a>
-    <div class="card p-8 text-center">
-      <div class="text-8xl font-bold text-blue-600 mb-6">{isUpperCase ? letter : letter.toLowerCase()}</div>
-      <div class="flex items-center justify-center gap-4 mb-4">
-        <button class="btn btn-secondary rounded-full" onclick={toggleCase}>
-          {#if isUpperCase}
-            <ArrowDownIcon class="h-4 w-4 my-1" />
-          {:else}
-            <ArrowUpIcon class="h-4 w-4 my-1" />
-          {/if}
-        </button>
-        <button class="btn btn-primary flex items-center gap-2 rounded-full" onclick={playLetterSound}>
-          <Volume2Icon size="20" />
-          Play Sound
-        </button>
+<div class="min-h-screen relative z-1">
+  <div class="w-full max-w-xl mx-auto pb-8">
+    <!-- Top Navigation -->
+    <div class="p-4 flex items-center justify-between">
+      <a href="/" class="btn btn-secondary flex items-center gap-2 text-sm">
+        <ArrowLeftIcon size="16" />
+        <span class="font-bold">{lang === 'en' ? 'Home' : 'Beranda'}</span>
+      </a>
+      <h1 class="text-lg font-black text-kid-title">
+        {lang === 'en' ? 'Letter' : 'Huruf'} {letter}
+      </h1>
+      <div class="w-20"></div>
+    </div>
+
+    <!-- Letter Hero Card -->
+    <div class="mx-3">
+      <div
+        class="card p-8 text-center border-none text-white relative overflow-hidden
+          {mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}"
+        style="background: {theme.gradient}; transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);"
+      >
+        <!-- Decorative circles -->
+        <div class="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10"></div>
+        <div class="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-white/10"></div>
+        <div class="absolute top-4 left-4 w-8 h-8 rounded-full bg-white/15 animate-float"></div>
+
+        <div class="relative z-1">
+          <div class="text-[7rem] leading-none font-black mb-4 drop-shadow-lg animate-pop">
+            {isUpperCase ? letter : letter.toLowerCase()}
+          </div>
+          <div class="flex items-center justify-center gap-3">
+            <button
+              class="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-all active:scale-90"
+              onclick={toggleCase}
+              title={isUpperCase ? 'Show lowercase' : 'Show uppercase'}
+            >
+              {#if isUpperCase}
+                <ArrowDownIcon class="h-5 w-5" />
+              {:else}
+                <ArrowUpIcon class="h-5 w-5" />
+              {/if}
+            </button>
+            <button
+              class="h-12 px-6 rounded-full bg-white font-black flex items-center gap-2 shadow-lg hover:shadow-xl transition-all active:scale-95 hover:scale-105"
+              style="color: {theme.accent};"
+              onclick={playLetterSound}
+            >
+              <Volume2Icon size="20" />
+              <span>{lang === 'en' ? 'Listen' : 'Dengar'}</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="card p-8">
-      <h2 class="text-2xl font-bold text-blue-600 mb-4">{lang === 'en' ? 'Words starting with' : 'Kata dimulai dengan'} {letter}</h2>
-      <div class="grid gap-4">
-        {#each words[lang][letter] as word}
-          <div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-            <span class="text-xl">{word}</span>
-            <button class="btn btn-primary rounded-full" onclick={() => playWordSound(word)}>
-              <Volume2Icon size="20" />
-            </button>
-          </div>
-        {/each}
+    <!-- Words Section -->
+    <div class="mx-3 mt-4">
+      <div
+        class="card p-6"
+        style="border-color: {theme.border}; transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s;
+          {mounted ? 'opacity: 1; transform: translateY(0)' : 'opacity: 0; transform: translateY(1rem)'}"
+      >
+        <h2 class="text-xl font-black mb-4 flex items-center gap-2" style="color: {theme.accent};">
+          <span>📖</span>
+          {lang === 'en' ? 'Words starting with' : 'Kata dimulai dengan'} {letter}
+        </h2>
+        <div class="grid gap-3">
+          {#each words[lang][letter] as word, i}
+            <div
+              class="flex items-center justify-between p-3.5 rounded-[var(--radius-kid)] border hover:shadow-md transition-all"
+              style="background: {theme.light}; border-color: {theme.border};
+                transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) {0.2 + i * 0.06}s;
+                {mounted ? 'opacity: 1; transform: translateX(0)' : 'opacity: 0; transform: translateX(-1rem)'}"
+            >
+              <span class="text-lg font-bold">{word}</span>
+              <button
+                class="w-10 h-10 rounded-full text-white flex items-center justify-center shadow-md active:scale-90 transition-all hover:brightness-110"
+                style="background: {theme.btnBg};"
+                onclick={() => playWordSound(word)}
+              >
+                <Volume2Icon size="16" />
+              </button>
+            </div>
+          {/each}
+        </div>
       </div>
     </div>
   </div>
