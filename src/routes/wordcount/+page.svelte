@@ -364,7 +364,7 @@
                 <div class="relative z-1 space-y-4 p-8">
                   <div class="text-8xl animate-jelly">{targetEmoji}</div>
                   <div
-                    class="text-4xl font-black text-leaf-500 uppercase tracking-widest"
+                    class="text-xl font-black text-leaf-500 uppercase"
                   >
                     {displayWord}
                   </div>
@@ -403,7 +403,7 @@
                     {targetEmoji}
                   </div>
                   <div
-                    class="text-4xl font-black text-berry-500 uppercase tracking-widest"
+                    class="text-xl font-black text-berry-500 uppercase"
                   >
                     {displayWord}
                   </div>
@@ -451,13 +451,13 @@
 
                 <!-- Word Display -->
                 <div
-                  class="text-3xl font-black text-kid-title uppercase tracking-wide my-4 px-4 leading-relaxed"
+                  class="text-xl font-black text-kid-title uppercase my-4 px-4 leading-relaxed"
                 >
                   {displayWord}
                 </div>
 
                 <div
-                  class="text-2xl font-black text-sky-600 mb-4"
+                  class="text-xl font-black text-sky-600 mb-4"
                 >
                   {lang === "en" ? "How many " : "Berapa banyak "}
                   <span class="bg-sky-100 px-3 py-1 rounded-lg border-2 border-sky-200">{targetLetter}</span>
@@ -468,7 +468,7 @@
                 <div class="grid grid-cols-5 gap-3">
                   {#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as num}
                     <button
-                      class="aspect-square rounded-xl flex items-center justify-center text-3xl font-black transition-all
+                      class="aspect-square rounded-xl flex items-center justify-center text-2xl font-black transition-all
                       {selectedCount === num && isWrong
                         ? 'bg-berry-100 border-2 border-berry-400 text-berry-500'
                         : selectedCount === num

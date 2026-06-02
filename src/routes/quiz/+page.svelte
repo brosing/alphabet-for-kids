@@ -263,7 +263,7 @@
 
               <!-- Score Display -->
               <div class="space-y-2">
-                <h2 class="text-3xl font-black text-kid-title">
+                <h2 class="text-xl font-black text-kid-title">
                   {correctAnswers} / {totalQuestions}
                 </h2>
                 <p class="text-lg font-bold text-primary-600">
@@ -336,7 +336,7 @@
                 <div class="relative z-1 space-y-4 p-8">
                   <div class="text-8xl animate-jelly">{targetEmoji}</div>
                   <div
-                    class="text-4xl font-black text-leaf-500 uppercase tracking-widest"
+                    class="text-xl font-black text-leaf-500 uppercase tracking-widest"
                   >
                     {targetWord}
                   </div>
@@ -368,7 +368,7 @@
                     {targetEmoji}
                   </div>
                   <div
-                    class="text-4xl font-black text-berry-500 uppercase tracking-widest"
+                    class="text-xl font-black text-berry-500 uppercase tracking-widest"
                   >
                     {displayWord}
                   </div>
@@ -413,7 +413,7 @@
                 >
                   {#each Array(targetWord.length) as _, i}
                     <button
-                      class="w-12 h-16 rounded-xl flex items-center justify-center text-3xl font-black transition-all
+                      class="w-12 h-16 rounded-xl flex items-center justify-center text-xl font-black transition-all
                       {selectedLetters[i]
                           ? 'bg-primary-100 border-2 border-primary-300 text-primary-600'
                           : 'bg-cream-100 border-2 border-cream-300 text-cream-300'}

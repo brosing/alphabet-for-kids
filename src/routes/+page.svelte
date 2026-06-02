@@ -44,9 +44,29 @@
     return colorPalette[index % colorPalette.length];
   }
 
+  const illustrations = [
+    { emoji: '🦁', name: 'Lion', color: 'bg-orange-100', border: 'border-orange-200' },
+    { emoji: '🐘', name: 'Elephant', color: 'bg-blue-100', border: 'border-blue-200' },
+    { emoji: '🦒', name: 'Giraffe', color: 'bg-yellow-100', border: 'border-yellow-200' },
+    { emoji: '🦊', name: 'Fox', color: 'bg-red-100', border: 'border-red-200' },
+    { emoji: '🐼', name: 'Panda', color: 'bg-gray-100', border: 'border-gray-200' },
+  ];
+
+  let currentIllustration = $state(illustrations[0]);
+  let activeAnimation = $state("");
+  let animationKey = $state(0);
   let mounted = $state(false);
 
+  function triggerAnimation() {
+    const animations = ['animate-jelly', 'animate-shake', 'animate-spin-once', 'animate-bounce'];
+    const newAnim = animations[Math.floor(Math.random() * animations.length)];
+    activeAnimation = newAnim;
+    animationKey++;
+    playSoundEffect('boing');
+  }
+
   onMount(() => {
+    currentIllustration = illustrations[Math.floor(Math.random() * illustrations.length)];
     setTimeout(() => {
       mounted = true;
     }, 50);
@@ -156,11 +176,24 @@
         </button>
       {/each}
 
+      <button 
+        class="col-span-2 aspect-[2/1] flex items-center justify-center relative bg-transparent border-2 border-dashed border-primary-100 hover:border-primary-300 transition-all active:scale-95 rounded-3xl"
+        onclick={triggerAnimation}
+        in:scale={{duration: 400, delay: alphabet.length * 10, start: 0.8, opacity: 0}}
+        title="Tap the animal!"
+      >
+        {#key animationKey}
+          <span class="text-6xl drop-shadow-sm inline-block {activeAnimation}">
+            {currentIllustration.emoji}
+          </span>
+        {/key}
+      </button>
+
       <!-- Word Quiz Button -->
       <a
         href="/quiz?lang={languageStore.current}"
         onclick={() => playSoundEffect('pop')}
-        class="col-span-2 card aspect-[2/1] flex items-center justify-center gap-3 text-xl font-black text-white border-none"
+        class="col-span-2 card aspect-[2/1] flex items-center justify-center gap-2 text-lg font-black text-white border-none"
         style="
           background: linear-gradient(135deg, #FCD34D, #FBBF24, #FB923C);
           box-shadow: 0 6px 24px rgba(245, 158, 11, 0.35);
@@ -175,7 +208,7 @@
       <a
         href="/wordcount?lang={languageStore.current}"
         onclick={() => playSoundEffect('pop')}
-        class="col-span-2 card aspect-[2/1] flex items-center justify-center gap-3 text-xl font-black text-white border-none"
+        class="col-span-2 card aspect-[2/1] flex items-center justify-center gap-2 text-lg font-black text-white border-none"
         style="
           background: linear-gradient(135deg, #38BDF8, #0EA5E9, #06B6D4);
           box-shadow: 0 6px 24px rgba(14, 165, 233, 0.35);
@@ -201,4 +234,27 @@
     50% { transform: translateX(20px); }
     100% { transform: translateX(0); }
   }
+
+  @keyframes jelly {
+    0%, 100% { transform: scale(1, 1); }
+    30% { transform: scale(1.25, 0.75); }
+    40% { transform: scale(0.75, 1.25); }
+    50% { transform: scale(1.15, 0.85); }
+    65% { transform: scale(0.95, 1.05); }
+    75% { transform: scale(1.05, 0.95); }
+  }
+  .animate-jelly { animation: jelly 0.6s both; }
+
+  @keyframes shake {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-12deg); }
+    75% { transform: rotate(12deg); }
+  }
+  .animate-shake { animation: shake 0.4s ease-in-out; }
+
+  @keyframes spin-once {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .animate-spin-once { animation: spin-once 0.6s ease-in-out; }
 </style>
