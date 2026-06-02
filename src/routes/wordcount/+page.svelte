@@ -9,7 +9,7 @@
     RefreshCwIcon,
     CheckCircleIcon,
   } from "svelte-feather-icons";
-  import { enEmoji, idEmoji } from "$lib/data";
+  import { enEmoji, idEmoji, enSentences, idSentences } from "$lib/data";
   import { playSoundEffect } from "$lib/audio";
   import { languageStore } from "$lib/stores/language.svelte";
 
@@ -18,7 +18,7 @@
   // Game state
   let targetWord = $state("");
   let displayWord = $state("");
-  let targetEmoji = $state("");
+  let targetEmoji = $state("📝");
   let targetLetter = $state<string>("");
   let letterCount = $state<number>(0);
   let selectedCount = $state<number | null>(null);
@@ -35,33 +35,67 @@
   let isRoundComplete = $state(false);
   let showRoundSummary = $state(false);
   let quizHistory = $state<boolean[]>([]);
+  let usedSentenceIndices = $state<number[]>([]);
+  let targetLetterCounts = $state<Record<string, number>>({});
 
-  const wordsData = {
-    en: enEmoji,
-    id: idEmoji,
+  const sentencesData = {
+    en: enSentences,
+    id: idSentences,
   };
 
-  // Generate random word from the data
-  function getRandomWord() {
-    const allEntries = Object.values(wordsData[lang]).flat();
-    const validEntries = allEntries.filter((entry) => entry.includes(" "));
-    const randomEntry = validEntries[Math.floor(Math.random() * validEntries.length)];
+  // Generate random sentence from the data
+  function getRandomSentence() {
+    const sentences = sentencesData[lang];
+    
+    // Filter out already used sentences
+    let availableIndices = sentences.map((_, i) => i).filter(i => !usedSentenceIndices.includes(i));
+    
+    // Fallback if we somehow run out of sentences
+    if (availableIndices.length === 0) {
+      usedSentenceIndices = [];
+      availableIndices = sentences.map((_, i) => i);
+    }
 
-    const firstSpaceIndex = randomEntry.indexOf(" ");
-    targetEmoji = randomEntry.slice(0, firstSpaceIndex);
-    displayWord = randomEntry.slice(firstSpaceIndex + 1).toUpperCase();
+    const randomIndex = availableIndices[Math.floor(Math.random() * availableIndices.length)];
+    usedSentenceIndices.push(randomIndex);
+    
+    const randomSentence = sentences[randomIndex];
+
+    displayWord = randomSentence.toUpperCase();
     targetWord = displayWord.replace(/[^A-Z]/g, "");
     
-    // Pick a random letter from the word
+    // Pick a random letter from the sentence
     const letters = targetWord.split("");
-    targetLetter = letters[Math.floor(Math.random() * letters.length)];
-    letterCount = letters.filter(l => l === targetLetter).length;
+    
+    // Find the frequencies of letters in this sentence
+    const charFreqsInSentence: Record<string, number> = {};
+    for (const char of letters) {
+      charFreqsInSentence[char] = (charFreqsInSentence[char] || 0) + 1;
+    }
+
+    // Sort unique letters in sentence by their frequency descending
+    const uniqueLettersInSentence = Object.keys(charFreqsInSentence).sort((a, b) => charFreqsInSentence[b] - charFreqsInSentence[a]);
+    
+    // Pick the most frequent letter that hasn't been used as target more than twice
+    let selectedLetter = uniqueLettersInSentence[0]; // Fallback to most frequent
+    for (const char of uniqueLettersInSentence) {
+      if ((targetLetterCounts[char] || 0) < 2) {
+        selectedLetter = char;
+        break;
+      }
+    }
+
+    targetLetter = selectedLetter;
+    letterCount = charFreqsInSentence[selectedLetter];
+    targetLetterCounts[selectedLetter] = (targetLetterCounts[selectedLetter] || 0) + 1;
+
+    targetEmoji = "📝";
 
     return targetWord;
   }
 
   function initQuiz() {
-    getRandomWord();
+    getRandomSentence();
     selectedCount = null;
     isCorrect = false;
     isWrong = false;
@@ -74,6 +108,8 @@
     isRoundComplete = false;
     showRoundSummary = false;
     quizHistory = [];
+    usedSentenceIndices = [];
+    targetLetterCounts = {};
     initQuiz();
   }
 
@@ -415,22 +451,22 @@
 
                 <!-- Word Display -->
                 <div
-                  class="text-5xl font-black text-kid-title uppercase tracking-widest my-4"
+                  class="text-3xl font-black text-kid-title uppercase tracking-wide my-4 px-4 leading-relaxed"
                 >
                   {displayWord}
                 </div>
 
                 <div
-                  class="text-3xl font-black text-sky-600 mb-4"
+                  class="text-2xl font-black text-sky-600 mb-4"
                 >
                   {lang === "en" ? "How many " : "Berapa banyak "}
-                  <span class="bg-sky-100 px-3 py-1 rounded-lg">{targetLetter}</span>
+                  <span class="bg-sky-100 px-3 py-1 rounded-lg border-2 border-sky-200">{targetLetter}</span>
                   {lang === "en" ? " letters?" : " huruf?"}
                 </div>
 
                 <!-- Number Selection Buttons -->
                 <div class="grid grid-cols-5 gap-3">
-                  {#each [1, 2, 3, 4, 5] as num}
+                  {#each [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as num}
                     <button
                       class="aspect-square rounded-xl flex items-center justify-center text-3xl font-black transition-all
                       {selectedCount === num && isWrong
@@ -439,7 +475,7 @@
                           ? 'bg-leaf-500 border-2 border-leaf-600 text-white shadow-lg'
                           : 'bg-white border-2 border-primary-200 text-primary-600 shadow-kid hover:shadow-kid-lg hover:border-primary-400 hover:bg-primary-50 active:scale-90'}"
                       onclick={() => checkAnswer(num)}
-                      in:scale={{ duration: 300, delay: num * 50, easing: backOut }}
+                      in:scale={{ duration: 300, delay: (num % 5) * 50, easing: backOut }}
                     >
                       {num}
                     </button>
