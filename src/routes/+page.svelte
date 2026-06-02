@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { fade, fly, scale } from "svelte/transition";
+  import { GithubIcon } from "svelte-feather-icons";
   import { playSoundEffect } from "$lib/audio";
   import { languageStore } from "$lib/stores/language.svelte";
 
@@ -221,9 +222,22 @@
     </div>
 
     <!-- Footer -->
-    <div class="text-center py-4 mt-6 text-sm font-semibold" style="color: #FDBA74;">
-      Made with ❤️ for little learners
-    </div>
+    <footer class="text-center py-6 mt-6 space-y-2">
+      <div class="text-sm font-semibold" style="color: #FDBA74;">
+        Made with ❤️ for little learners
+      </div>
+      <div class="flex justify-center">
+        <a 
+          href="https://github.com/brosing/alphabet-for-kids" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 px-4 py-2 transition-all text-xs font-bold opacity-50 hover:opacity-100"
+        >
+          <GithubIcon size="14" />
+          <span>GitHub</span>
+        </a>
+      </div>
+    </footer>
   </div>
 </div>
 {/if}
