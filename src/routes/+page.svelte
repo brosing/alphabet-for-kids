@@ -178,6 +178,21 @@
         <span class="text-2xl">🎮</span>
         <span>Word Quiz</span>
       </a>
+
+      <!-- Word Count Button -->
+      <a
+        href="/wordcount?lang={language}"
+        onclick={() => playSoundEffect('pop')}
+        class="col-span-2 card aspect-[2/1] flex items-center justify-center gap-3 text-xl font-black text-white border-none"
+        style="
+          background: linear-gradient(135deg, #38BDF8, #0EA5E9, #06B6D4);
+          box-shadow: 0 6px 24px rgba(14, 165, 233, 0.35);
+        "
+        in:scale={{duration: 400, delay: (alphabet.length + 1) * 15, start: 0.8, opacity: 0}}
+      >
+        <span class="text-2xl">🔢</span>
+        <span>Word Count</span>
+      </a>
     </div>
 
     <!-- Footer -->

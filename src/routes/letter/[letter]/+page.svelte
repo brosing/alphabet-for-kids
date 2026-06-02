@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { ArrowLeftIcon, ArrowRightIcon, ArrowUpIcon, ArrowDownIcon, Volume2Icon } from 'svelte-feather-icons';
+  import { ArrowLeftIcon, ArrowRightIcon, ArrowUpIcon, ArrowDownIcon, Volume2Icon, GridIcon, ListIcon } from 'svelte-feather-icons';
   import { fade, fly, scale } from 'svelte/transition';
   import { page } from '$app/state';
   import { enEmoji, idEmoji } from '$lib/data';
@@ -9,6 +9,7 @@
   type LangType = 'en' | 'id'
   let lang = $state<LangType>((page.url.searchParams.get('lang') as LangType) || 'id');
   let isUpperCase = $state(true);
+  let viewMode = $state<'list' | 'grid'>('list');
   let mounted = $state(false);
   let availableVoices = $state<SpeechSynthesisVoice[]>([]);
 
@@ -87,6 +88,15 @@
   function toggleCase() {
     playSoundEffect('boing');
     isUpperCase = !isUpperCase;
+  }
+
+  function splitEmoji(word: string) {
+    const firstSpace = word.indexOf(' ');
+    if (firstSpace === -1) return { emoji: word, text: '' };
+    return {
+      emoji: word.slice(0, firstSpace),
+      text: word.slice(firstSpace + 1)
+    };
   }
 </script>
 
@@ -180,29 +190,75 @@
         style="border-color: {theme.border}; transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s;
           {mounted ? 'opacity: 1; transform: translateY(0)' : 'opacity: 0; transform: translateY(1rem)'}"
       >
-        <h2 class="text-xl font-black mb-4 flex items-center gap-2" style="color: {theme.accent};">
-          <span>📖</span>
-          {lang === 'en' ? 'Words starting with' : 'Kata dimulai dengan'} {letter}
-        </h2>
-        <div class="grid gap-3">
-          {#each words[lang][letter] as word, i}
-            <div
-              class="flex items-center justify-between p-3.5 rounded-[var(--radius-kid)] border hover:shadow-md transition-all"
-              style="background: {theme.light}; border-color: {theme.border};
-                transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) {0.2 + i * 0.06}s;
-                {mounted ? 'opacity: 1; transform: translateX(0)' : 'opacity: 0; transform: translateX(-1rem)'}"
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-black flex items-center gap-2" style="color: {theme.accent};">
+            <span>📖</span>
+            {lang === 'en' ? 'Words' : 'Kata'} {letter}
+          </h2>
+          <div class="flex bg-gray-100 p-1 rounded-xl">
+            <button 
+              class="p-2 rounded-lg transition-all {viewMode === 'list' ? 'bg-white shadow-sm' : 'text-gray-400'}"
+              style={viewMode === 'list' ? `color: ${theme.accent}` : ''}
+              onclick={() => { viewMode = 'list'; playSoundEffect('pop'); }}
+              title="List View"
             >
-              <span class="text-lg font-bold">{word}</span>
-              <button
-                class="w-10 h-10 rounded-full text-white flex items-center justify-center shadow-md active:scale-90 transition-all hover:brightness-110"
-                style="background: {theme.btnBg};"
-                onclick={() => playWordSound(word)}
-              >
-                <Volume2Icon size="16" />
-              </button>
-            </div>
-          {/each}
+              <ListIcon size="18" />
+            </button>
+            <button 
+              class="p-2 rounded-lg transition-all {viewMode === 'grid' ? 'bg-white shadow-sm' : 'text-gray-400'}"
+              style={viewMode === 'grid' ? `color: ${theme.accent}` : ''}
+              onclick={() => { viewMode = 'grid'; playSoundEffect('pop'); }}
+              title="Grid View"
+            >
+              <GridIcon size="18" />
+            </button>
+          </div>
         </div>
+
+        {#if viewMode === 'list'}
+          <div class="grid gap-3">
+            {#each words[lang][letter] as word, i}
+              <div
+                class="flex items-center justify-between p-3.5 rounded-[var(--radius-kid)] border hover:shadow-md transition-all"
+                style="background: {theme.light}; border-color: {theme.border};
+                  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) {0.2 + i * 0.06}s;
+                  {mounted ? 'opacity: 1; transform: translateX(0)' : 'opacity: 0; transform: translateX(-1rem)'}"
+              >
+                <span class="text-lg font-bold">{word}</span>
+                <button
+                  class="w-10 h-10 rounded-full text-white flex items-center justify-center shadow-md active:scale-90 transition-all hover:brightness-110"
+                  style="background: {theme.btnBg};"
+                  onclick={() => playWordSound(word)}
+                >
+                  <Volume2Icon size="16" />
+                </button>
+              </div>
+            {/each}
+          </div>
+        {:else}
+          <div class="grid grid-cols-2 gap-4">
+            {#each words[lang][letter] as word, i}
+              {@const { emoji, text } = splitEmoji(word)}
+              <div
+                class="flex flex-col items-center justify-center p-4 rounded-[var(--radius-kid)] border hover:shadow-md transition-all text-center"
+                style="background: {theme.light}; border-color: {theme.border};
+                  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) {0.2 + i * 0.06}s;
+                  {mounted ? 'opacity: 1; transform: scale(1)' : 'opacity: 0; transform: scale(0.9)'}"
+              >
+                <span class="text-6xl mb-3 drop-shadow-sm">{emoji}</span>
+                <span class="text-lg font-black block mb-3" style="color: {theme.accent};">{text}</span>
+                <button
+                  class="w-full py-2.5 rounded-xl text-white flex items-center justify-center gap-2 shadow-sm active:scale-95 transition-all hover:brightness-110"
+                  style="background: {theme.btnBg};"
+                  onclick={() => playWordSound(word)}
+                >
+                  <Volume2Icon size="16" />
+                  <span class="text-sm font-bold uppercase tracking-wider">{lang === 'en' ? 'Listen' : 'Dengar'}</span>
+                </button>
+              </div>
+            {/each}
+          </div>
+        {/if}
       </div>
     </div>
   </div>
