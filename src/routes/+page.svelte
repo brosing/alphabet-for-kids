@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { fade, fly, scale } from "svelte/transition";
   import { playSoundEffect } from "$lib/audio";
+  import { languageStore } from "$lib/stores/language.svelte";
 
   const alphabet = Array.from("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
@@ -43,31 +44,22 @@
     return colorPalette[index % colorPalette.length];
   }
 
-  let language = $state<"en" | "id">("id");
   let mounted = $state(false);
 
   onMount(() => {
-    const stored = localStorage.getItem("language");
-    if (stored === "en" || stored === "id") {
-      language = stored;
-    }
     setTimeout(() => {
       mounted = true;
     }, 50);
   });
 
-  $effect(() => {
-    localStorage.setItem("language", language);
-  });
-
   function toggleLanguage() {
     playSoundEffect('pop');
-    language = language === "en" ? "id" : "en";
+    languageStore.set(languageStore.current === "en" ? "id" : "en");
   }
 
   function goToLetterDetail(letter: string) {
     playSoundEffect('pop');
-    window.location.href = `/letter/${letter.toLowerCase()}?lang=${language}`;
+    window.location.href = `/letter/${letter.toLowerCase()}?lang=${languageStore.current}`;
   }
 </script>
 
@@ -94,7 +86,7 @@
   <div class="w-full max-w-xl mx-auto pb-8" in:fly={{y: 20, duration: 500, delay: 100}}>
     <!-- Header -->
     <header
-      class="sticky top-0 z-10 backdrop-blur-lg bg-white/70 border-b-2 border-cream-200 md:rounded-b-[var(--radius-kid-xl)]"
+      class="sticky top-0 z-10 backdrop-blur-lg bg-white/70 border-b-2 border-cream-200 md:rounded-b-[var(--radius-kid-lg)]"
     >
       <div
         class="container mx-auto px-4 py-3 flex justify-between items-center"
@@ -107,7 +99,7 @@
           class="btn btn-secondary flex items-center gap-2 text-sm"
           onclick={toggleLanguage}
         >
-          <span class="font-black">{language === "en" ? "🇬🇧 EN" : "🇮🇩 ID"}</span
+          <span class="font-black">{languageStore.current === "en" ? "🇬🇧 EN" : "🇮🇩 ID"}</span
           >
         </button>
       </div>
@@ -115,7 +107,7 @@
 
     <!-- Hero Banner -->
     <div
-      class="mx-3 mt-4 p-6 rounded-[var(--radius-kid-xl)] text-white relative overflow-hidden"
+      class="mx-3 md:mx-0 mt-4 p-6 rounded-[var(--radius-kid-lg)] text-white relative overflow-hidden"
       style="background: linear-gradient(135deg, #FB923C 0%, #F97316 40%, #FB7185 100%);"
     >
       <div class="absolute inset-0 opacity-10">
@@ -135,10 +127,10 @@
       </div>
       <div class="relative z-1">
         <h2 class="text-2xl font-black mb-1">
-          {language === "en" ? "Let's Learn!" : "Ayo Belajar!"}
+          {languageStore.current === "en" ? "Let's Learn!" : "Ayo Belajar!"}
         </h2>
         <p class="text-white/80 text-sm font-semibold">
-          {language === "en"
+          {languageStore.current === "en"
             ? "Tap a letter to explore words & sounds 🎶"
             : "Ketuk huruf untuk jelajahi kata & suara 🎶"}
         </p>
@@ -166,7 +158,7 @@
 
       <!-- Word Quiz Button -->
       <a
-        href="/quiz?lang={language}"
+        href="/quiz?lang={languageStore.current}"
         onclick={() => playSoundEffect('pop')}
         class="col-span-2 card aspect-[2/1] flex items-center justify-center gap-3 text-xl font-black text-white border-none"
         style="
@@ -181,7 +173,7 @@
 
       <!-- Word Count Button -->
       <a
-        href="/wordcount?lang={language}"
+        href="/wordcount?lang={languageStore.current}"
         onclick={() => playSoundEffect('pop')}
         class="col-span-2 card aspect-[2/1] flex items-center justify-center gap-3 text-xl font-black text-white border-none"
         style="
@@ -196,7 +188,7 @@
     </div>
 
     <!-- Footer -->
-    <div class="text-center py-4 text-sm font-semibold" style="color: #FDBA74;">
+    <div class="text-center py-4 mt-6 text-sm font-semibold" style="color: #FDBA74;">
       Made with ❤️ for little learners
     </div>
   </div>

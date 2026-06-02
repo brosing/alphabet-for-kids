@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { page } from "$app/state";
   import { fade, scale, fly } from "svelte/transition";
   import { cubicOut, backOut } from "svelte/easing";
   import confetti from "canvas-confetti";
@@ -12,11 +11,9 @@
   } from "svelte-feather-icons";
   import { enEmoji, idEmoji } from "$lib/data";
   import { playSoundEffect } from "$lib/audio";
+  import { languageStore } from "$lib/stores/language.svelte";
 
-  type LangType = "en" | "id";
-  let lang = $state<LangType>(
-    (page.url.searchParams.get("lang") as LangType) || "id",
-  );
+  const lang = $derived(languageStore.current);
 
   let targetWord = $state("");
   let displayWord = $state("");
@@ -88,10 +85,6 @@
   }
 
   onMount(() => {
-    const stored = localStorage.getItem("language") as LangType;
-    if (stored === "en" || stored === "id") {
-      lang = stored;
-    }
     initQuiz();
 
     const loadVoices = () => {
@@ -130,7 +123,7 @@
   }
 
   function selectLetter(letter: string, index: number) {
-    if (isCorrect) return;
+    if (isCorrect || isWrong) return;
     isWrong = false;
 
     playSoundEffect("pop");
@@ -148,7 +141,7 @@
   }
 
   function undoLetter(index: number) {
-    if (isCorrect) return;
+    if (isCorrect || isWrong) return;
     playSoundEffect("pop");
     const [letter] = selectedLetters.splice(index, 1);
     shuffledLetters.push(letter);
@@ -156,6 +149,7 @@
   }
 
   function resetQuiz() {
+    if (isCorrect || isWrong) return;
     playSoundEffect("boing");
     selectedLetters = [];
     shuffledLetters = targetWord.split("").sort(() => Math.random() - 0.5);
@@ -244,8 +238,6 @@
         </div>
         <div class="text-center mt-1 text-sm font-bold text-primary-600">
           {lang === "en" ? "Question" : "Soal"} {questionsAnswered} / {totalQuestions}
-          <!-- |
-          {lang === "en" ? "Score" : "Skor"}: {correctAnswers} / {questionsAnswered} -->
         </div>
       </header>
 
@@ -417,16 +409,12 @@
 
                 <!-- Letter Slots -->
                 <div
-                  class="flex flex-wrap justify-center gap-2 min-h-15 {isWrong
-                    ? 'animate-shake'
-                    : ''}"
+                  class="flex flex-wrap justify-center gap-2 min-h-15"
                 >
                   {#each Array(targetWord.length) as _, i}
                     <button
                       class="w-12 h-16 rounded-xl flex items-center justify-center text-3xl font-black transition-all
-                      {isWrong
-                        ? 'bg-berry-100 border-2 border-berry-400 text-berry-500'
-                        : selectedLetters[i]
+                      {selectedLetters[i]
                           ? 'bg-primary-100 border-2 border-primary-300 text-primary-600'
                           : 'bg-cream-100 border-2 border-cream-300 text-cream-300'}
                       {selectedLetters[i]
@@ -460,11 +448,9 @@
                 </div>
 
                 <!-- Reset -->
-                {#if !isWrong}
-                  <button class="btn btn-ghost text-sm" onclick={resetQuiz}>
-                    ↩️ {lang === "en" ? "Reset" : "Ulangi"}
-                  </button>
-                {/if}
+                <button class="btn btn-ghost text-sm" onclick={resetQuiz}>
+                  ↩️ {lang === "en" ? "Reset" : "Ulangi"}
+                </button>
               </div>
             {/if}
           </div>

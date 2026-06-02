@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { page } from "$app/state";
   import { fade, scale, fly } from "svelte/transition";
   import { cubicOut, backOut } from "svelte/easing";
   import confetti from "canvas-confetti";
@@ -12,11 +11,9 @@
   } from "svelte-feather-icons";
   import { enEmoji, idEmoji } from "$lib/data";
   import { playSoundEffect } from "$lib/audio";
+  import { languageStore } from "$lib/stores/language.svelte";
 
-  type LangType = "en" | "id";
-  let lang = $state<LangType>(
-    (page.url.searchParams.get("lang") as LangType) || "id",
-  );
+  const lang = $derived(languageStore.current);
 
   // Game state
   let targetWord = $state("");
@@ -100,10 +97,6 @@
   }
 
   onMount(() => {
-    const stored = localStorage.getItem("language") as LangType;
-    if (stored === "en" || stored === "id") {
-      lang = stored;
-    }
     initQuiz();
 
     const loadVoices = () => {

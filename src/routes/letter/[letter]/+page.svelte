@@ -5,15 +5,15 @@
   import { page } from '$app/state';
   import { enEmoji, idEmoji } from '$lib/data';
   import { playSoundEffect } from '$lib/audio';
+  import { languageStore } from '$lib/stores/language.svelte';
 
-  type LangType = 'en' | 'id'
-  let lang = $state<LangType>((page.url.searchParams.get('lang') as LangType) || 'id');
+  const lang = $derived(languageStore.current);
   let isUpperCase = $state(true);
   let viewMode = $state<'list' | 'grid'>('list');
   let mounted = $state(false);
   let availableVoices = $state<SpeechSynthesisVoice[]>([]);
 
-  const words: Record<LangType, { [key: string]: string[]}> = {
+  const words: Record<'en' | 'id', { [key: string]: string[]}> = {
     en: enEmoji,
     id: idEmoji
   };
@@ -37,14 +37,9 @@
   const theme = $derived(colorThemes[colorIdx]);
 
   onMount(() => {
-    const urlLang = page.url.searchParams.get('lang') as LangType;
+    const urlLang = page.url.searchParams.get('lang') as 'en' | 'id';
     if (urlLang === 'en' || urlLang === 'id') {
-      localStorage.setItem('language', urlLang);
-    } else {
-      const stored = localStorage.getItem('language') as LangType;
-      if (stored === 'en' || stored === 'id') {
-        lang = stored;
-      }
+      languageStore.set(urlLang);
     }
     
     const loadVoices = () => {
